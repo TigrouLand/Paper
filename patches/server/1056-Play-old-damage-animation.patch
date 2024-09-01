@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Giovanni <42092549+Matocolotoe@users.noreply.github.com>
 Date: Sun, 1 Sep 2024 13:56:40 +0200
-Subject: [PATCH] [TL] Play old damage animation
+Subject: [PATCH] Play old damage animation
 
 
 diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java

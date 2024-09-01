@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Giovanni <42092549+Matocolotoe@users.noreply.github.com>
+Date: Sun, 1 Sep 2024 14:13:00 +0200
+Subject: [PATCH] [TL] Change strength and weakness behavior
+
+
+diff --git a/src/main/java/net/minecraft/world/effect/MobEffects.java b/src/main/java/net/minecraft/world/effect/MobEffects.java
+index cc5f62f7479a5c29a9851e9c3d990c4c259d13d4..dfad1a9f4f590769de7755565a3fc7f1377c934c 100644
+--- a/src/main/java/net/minecraft/world/effect/MobEffects.java
++++ b/src/main/java/net/minecraft/world/effect/MobEffects.java
+@@ -47,7 +47,7 @@ public class MobEffects {
+         "strength",
+         new MobEffect(MobEffectCategory.BENEFICIAL, 16762624)
+             .addAttributeModifier(
+-                Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.strength"), 3.0, AttributeModifier.Operation.ADD_VALUE
++                Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.strength"), 0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL // TL - Change strength behavior
+             )
+     );
+     public static final Holder<MobEffect> HEAL = register("instant_health", new HealOrHarmMobEffect(MobEffectCategory.BENEFICIAL, 16262179, false));
+@@ -72,7 +72,7 @@ public class MobEffects {
+         "weakness",
+         new MobEffect(MobEffectCategory.HARMFUL, 4738376)
+             .addAttributeModifier(
+-                Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.weakness"), -4.0, AttributeModifier.Operation.ADD_VALUE
++                Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.weakness"), -0.25, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL // TL - Change weakness behavior
+             )
+     );
+     public static final Holder<MobEffect> POISON = register("poison", new PoisonMobEffect(MobEffectCategory.HARMFUL, 8889187));
