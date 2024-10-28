@@ -15,13 +15,13 @@ public net.minecraft.server.dedicated.DedicatedServerProperties reload(Lnet/mine
 public net.minecraft.world.level.NaturalSpawner SPAWNING_CATEGORIES
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 7a0f2391a464eeebc5e57856300bc000b8d35e52..94dfc105b197c9eda481cbe90bb48b71c845e702 100644
+index 2233e51bfab4ac36977984e8fe7fddb04120dddd..7f7b7f0b29107375b2438e3af0bc0f40390db4fa 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -10,6 +10,7 @@ dependencies {
      implementation("jline:jline:2.12.1")
      implementation("org.apache.logging.log4j:log4j-iostreams:2.22.1") // Paper - remove exclusion
-     implementation("org.ow2.asm:asm-commons:9.7")
+     implementation("org.ow2.asm:asm-commons:9.7.1")
 +    implementation("org.spongepowered:configurate-yaml:4.2.0-SNAPSHOT") // Paper - config files
      implementation("commons-lang:commons-lang:2.6")
      runtimeOnly("org.xerial:sqlite-jdbc:3.46.0.0")
@@ -487,10 +487,10 @@ index 0000000000000000000000000000000000000000..d9502ba028a96f9cc846f9ed428bd806
 +}
 diff --git a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..45ab7ff5497ceccb85944d2e8d354d9c860abf3b
+index 0000000000000000000000000000000000000000..b92bfd89e32becde2e7630c6116c16f8a4f6614a
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
-@@ -0,0 +1,324 @@
+@@ -0,0 +1,331 @@
 +package io.papermc.paper.configuration;
 +
 +import co.aikar.timings.MinecraftTimings;
@@ -594,7 +594,14 @@ index 0000000000000000000000000000000000000000..45ab7ff5497ceccb85944d2e8d354d9c
 +
 +            @PostProcess
 +            private void postProcess() {
-+                if (this.enabled && this.secret.isEmpty()) {
++                if (!this.enabled) return;
++
++                final String environmentSourcedVelocitySecret = System.getenv("PAPER_VELOCITY_SECRET");
++                if (environmentSourcedVelocitySecret != null && !environmentSourcedVelocitySecret.isEmpty()) {
++                    this.secret = environmentSourcedVelocitySecret;
++                }
++
++                if (this.secret.isEmpty()) {
 +                    LOGGER.error("Velocity is enabled, but no secret key was specified. A secret key is required. Disabling velocity...");
 +                    this.enabled = false;
 +                }
@@ -1416,10 +1423,10 @@ index 0000000000000000000000000000000000000000..990d1bb46e0f9719f4e9af928d80ac6f
 +}
 diff --git a/src/main/java/io/papermc/paper/configuration/WorldConfiguration.java b/src/main/java/io/papermc/paper/configuration/WorldConfiguration.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..f1b74f7b12fc7b35815886501937725b65f8a8e3
+index 0000000000000000000000000000000000000000..fd3b1c10695634f65c7291016bf671c084bc4d57
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/configuration/WorldConfiguration.java
-@@ -0,0 +1,578 @@
+@@ -0,0 +1,581 @@
 +package io.papermc.paper.configuration;
 +
 +import com.google.common.collect.HashBasedTable;
@@ -1448,6 +1455,7 @@ index 0000000000000000000000000000000000000000..f1b74f7b12fc7b35815886501937725b
 +import java.util.IdentityHashMap;
 +import java.util.List;
 +import java.util.Map;
++import java.util.OptionalDouble;
 +import java.util.function.Function;
 +import java.util.stream.Collectors;
 +import net.minecraft.Util;
@@ -1460,7 +1468,6 @@ index 0000000000000000000000000000000000000000..f1b74f7b12fc7b35815886501937725b
 +import net.minecraft.world.entity.Entity;
 +import net.minecraft.world.entity.EntityType;
 +import net.minecraft.world.entity.ExperienceOrb;
-+import net.minecraft.world.entity.Leashable;
 +import net.minecraft.world.entity.MobCategory;
 +import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 +import net.minecraft.world.entity.decoration.HangingEntity;
@@ -1800,6 +1807,7 @@ index 0000000000000000000000000000000000000000..f1b74f7b12fc7b35815886501937725b
 +        public int maxRefills = -1;
 +        public Duration refreshMin = Duration.of("12h");
 +        public Duration refreshMax = Duration.of("2d");
++        public boolean retainUnlootedShulkerBoxLootTableOnNonPlayerBreak = true;
 +    }
 +
 +    public MaxGrowthHeight maxGrowthHeight;
@@ -1831,6 +1839,8 @@ index 0000000000000000000000000000000000000000..f1b74f7b12fc7b35815886501937725b
 +        public boolean disableExplosionKnockback = false;
 +        public boolean generateFlatBedrock = false;
 +        public FrostedIce frostedIce;
++        public DoubleOr.Disabled voidDamageAmount = new DoubleOr.Disabled(OptionalDouble.of(4));
++        public double voidDamageMinBuildHeightOffset = -64.0;
 +
 +        public class FrostedIce extends ConfigurationPart {
 +            public boolean enabled = true;
@@ -5216,10 +5226,10 @@ index e433037a03ffafabb952887ae3980e1d51411d4c..c061813d275fbc48d7629cc59d90dbb4
          this.world = new CraftWorld((ServerLevel) this, gen, biomeProvider, env);
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 3c0691ef65c8db1002b76984f4ddfe2072d793c9..b3c4cdd9cfff6857f3007fbd91a280bcc53ab072 100644
+index 357c948dd66644497583996f211f25cbe5c78828..d0c41302478bd9b0ec65020e7ef520bd3ff1f347 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-@@ -962,6 +962,7 @@ public final class CraftServer implements Server {
+@@ -964,6 +964,7 @@ public final class CraftServer implements Server {
          }
  
          org.spigotmc.SpigotConfig.init((File) this.console.options.valueOf("spigot-settings")); // Spigot
@@ -5228,7 +5238,7 @@ index 3c0691ef65c8db1002b76984f4ddfe2072d793c9..b3c4cdd9cfff6857f3007fbd91a280bc
              world.serverLevelData.setDifficulty(config.difficulty);
              world.setSpawnSettings(config.spawnMonsters, config.spawnAnimals);
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index 273a6658deacbf00f6cc498cf3fcd20d144bd9e4..cf06abf508fab734f5945e1d292c01512a50749e 100644
+index 4566237fa1d49a559b2df806f9a318be46a6eade..0ea2d13ab80559472513c6df362583b8371a9532 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
 @@ -142,6 +142,19 @@ public class Main {
@@ -5352,15 +5362,15 @@ index 0000000000000000000000000000000000000000..0396589795da1f83ddf62426236dde9a
 +        }
 +    }
 +}
-diff --git a/src/test/java/org/bukkit/support/AbstractTestingBase.java b/src/test/java/org/bukkit/support/AbstractTestingBase.java
-index 5bda0bc976920f224586f2c0e083b771c676e307..4e9612600822bc1b52b8528dff2783d43385ec73 100644
---- a/src/test/java/org/bukkit/support/AbstractTestingBase.java
-+++ b/src/test/java/org/bukkit/support/AbstractTestingBase.java
-@@ -68,6 +68,7 @@ public abstract class AbstractTestingBase {
-         BIOMES = REGISTRY_CUSTOM.registryOrThrow(Registries.BIOME);
+diff --git a/src/test/java/org/bukkit/support/DummyServerHelper.java b/src/test/java/org/bukkit/support/DummyServerHelper.java
+index f81f86cf05a8c6816d356185af6d0d84a0474dd2..ba0a2ab9de34fa40dd90cecaeec4a5e54fe3e2d8 100644
+--- a/src/test/java/org/bukkit/support/DummyServerHelper.java
++++ b/src/test/java/org/bukkit/support/DummyServerHelper.java
+@@ -91,6 +91,7 @@ public final class DummyServerHelper {
+         when(instance.getPluginManager()).thenReturn(pluginManager);
+         // Paper end - testing additions
  
-         DummyServer.setup();
-+        io.papermc.paper.configuration.GlobalConfigTestingBase.setupGlobalConfigForTest(); // Paper
- 
-         CraftRegistry.setMinecraftRegistry(REGISTRY_CUSTOM);
- 
++        io.papermc.paper.configuration.GlobalConfigTestingBase.setupGlobalConfigForTest(); // Paper - configuration files - setup global configuration test base
+         return instance;
+     }
+ }

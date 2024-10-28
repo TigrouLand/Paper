@@ -25,7 +25,7 @@ Other changes:
 Co-Authored-By: Emilia Kond <emilia@rymiel.space>
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 94dfc105b197c9eda481cbe90bb48b71c845e702..0a05e753ff5e7b1d741c7719524715d7364cac4f 100644
+index c4572c0a6d9695088613d158838f236fe64efb48..83daf789efc4ce90ff54420e040b783569eb5cab 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -5,9 +5,29 @@ plugins {
@@ -57,9 +57,9 @@ index 94dfc105b197c9eda481cbe90bb48b71c845e702..0a05e753ff5e7b1d741c7719524715d7
 +    alsoShade(log4jPlugins.output)
 +    // Paper end
      implementation("org.apache.logging.log4j:log4j-iostreams:2.22.1") // Paper - remove exclusion
-     implementation("org.ow2.asm:asm-commons:9.7")
+     implementation("org.ow2.asm:asm-commons:9.7.1")
      implementation("org.spongepowered:configurate-yaml:4.2.0-SNAPSHOT") // Paper - config files
-@@ -78,6 +98,19 @@ tasks.check {
+@@ -79,6 +99,19 @@ tasks.check {
      dependsOn(scanJar)
  }
  // Paper end
@@ -78,7 +78,7 @@ index 94dfc105b197c9eda481cbe90bb48b71c845e702..0a05e753ff5e7b1d741c7719524715d7
 +// Paper end - use TCA for console improvements
  
  tasks.test {
-     exclude("org/bukkit/craftbukkit/inventory/ItemStack*Test.class")
+     include("**/**TestSuite.class")
 diff --git a/src/log4jPlugins/java/io/papermc/paper/console/StripANSIConverter.java b/src/log4jPlugins/java/io/papermc/paper/console/StripANSIConverter.java
 new file mode 100644
 index 0000000000000000000000000000000000000000..91547f6e6fe90006713beb2818da634304bdd236
@@ -260,7 +260,7 @@ index 8323f135d6bf2e1f12525e05094ffa3f2420e7e1..a143ea1e58464a3122fbd8ccafe417bd
      }
  }
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index e0b2d474e8d6f2d573d2c1f63e68ba931ecf4eb6..91800791427e9362baf68ca3cffda5bfa58de2b8 100644
+index 387552877ac82baa3af0da723dbb7c331fad6cf4..b334cfc9b98d96f9bfba1d5b14c03c336d30ff23 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -154,7 +154,7 @@ import com.mojang.serialization.Dynamic;
@@ -280,7 +280,7 @@ index e0b2d474e8d6f2d573d2c1f63e68ba931ecf4eb6..91800791427e9362baf68ca3cffda5bf
      public static int currentTick = (int) (System.currentTimeMillis() / 50);
      public java.util.Queue<Runnable> processQueue = new java.util.concurrent.ConcurrentLinkedQueue<Runnable>();
      public int autosavePeriod;
-@@ -384,7 +383,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -383,7 +382,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.options = options;
          this.worldLoader = worldLoader;
          this.vanillaCommandDispatcher = worldstem.dataPackResources().commands; // CraftBukkit
@@ -290,7 +290,7 @@ index e0b2d474e8d6f2d573d2c1f63e68ba931ecf4eb6..91800791427e9362baf68ca3cffda5bf
          if (System.console() == null && System.getProperty("jline.terminal") == null) {
              System.setProperty("jline.terminal", "jline.UnsupportedTerminal");
              Main.useJline = false;
-@@ -405,6 +406,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -404,6 +405,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
                  MinecraftServer.LOGGER.warn((String) null, ex);
              }
          }
@@ -299,7 +299,7 @@ index e0b2d474e8d6f2d573d2c1f63e68ba931ecf4eb6..91800791427e9362baf68ca3cffda5bf
          Runtime.getRuntime().addShutdownHook(new org.bukkit.craftbukkit.util.ServerShutdownThread(this));
          // CraftBukkit end
          this.paperConfigurations = services.paperConfigurations(); // Paper - add paper configuration files
-@@ -1120,7 +1123,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1118,7 +1121,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
                  org.spigotmc.WatchdogThread.doStop(); // Spigot
                  // CraftBukkit start - Restore terminal to original settings
                  try {
@@ -308,7 +308,7 @@ index e0b2d474e8d6f2d573d2c1f63e68ba931ecf4eb6..91800791427e9362baf68ca3cffda5bf
                  } catch (Exception ignored) {
                  }
                  // CraftBukkit end
-@@ -1658,7 +1661,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -1656,7 +1659,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
  
      @Override
      public void sendSystemMessage(Component message) {
@@ -396,7 +396,7 @@ index e9109526880159e2341cc97b53939ba2bcfaeaf9..9dcfcea63f57f45a5584bb80c34fe445
  
          this.bans = new UserBanList(PlayerList.USERBANLIST_FILE);
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index bec1fdabbc3727c1f7297b2d23914a5179f4adcb..17df1085e29429b202a6f9003343b15b15e2f8f7 100644
+index 9f7634053ddfc4fc67f89cc99524e9ebd6096f46..752933ceabd7ebe7b1e9f7d41198128f6f2182a6 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -43,7 +43,7 @@ import java.util.logging.Level;
@@ -408,7 +408,7 @@ index bec1fdabbc3727c1f7297b2d23914a5179f4adcb..17df1085e29429b202a6f9003343b15b
  import net.minecraft.advancements.AdvancementHolder;
  import net.minecraft.commands.CommandSourceStack;
  import net.minecraft.commands.Commands;
-@@ -1354,9 +1354,13 @@ public final class CraftServer implements Server {
+@@ -1356,9 +1356,13 @@ public final class CraftServer implements Server {
          return this.logger;
      }
  
@@ -423,7 +423,7 @@ index bec1fdabbc3727c1f7297b2d23914a5179f4adcb..17df1085e29429b202a6f9003343b15b
      @Override
      public PluginCommand getPluginCommand(String name) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index 9c1fab8db74757e1fb57d4f47099ba6e1536cd6d..3eecea2e6df217ccf2c432d02022c53443a37014 100644
+index 3b0370256b4d8c96053b340a657c6bcc6be6c9de..bdb8e882ec1efbe5afec9ec5a5df57bf38d4ba2b 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
 @@ -13,7 +13,6 @@ import java.util.logging.Logger;
@@ -500,7 +500,7 @@ index bcf1c36d07b79520a39643d3a01020a67b1c9ef2..217e7e3b9db04c7fc5f6518f39cc9d34
 +    }*/ // Paper
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java b/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
-index 0b4c62387c1093652ac15b64a8703249de4cf088..d24acf28f5ed023acc550bcf877e4b9800ec8c9f 100644
+index 0b4c62387c1093652ac15b64a8703249de4cf088..0b27172073530617a6e0b2b83fe1e9d231653b8d 100644
 --- a/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
 +++ b/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
 @@ -4,50 +4,73 @@ import java.util.Collections;
@@ -534,7 +534,7 @@ index 0b4c62387c1093652ac15b64a8703249de4cf088..d24acf28f5ed023acc550bcf877e4b98
 -    public int complete(final String buffer, final int cursor, final List<CharSequence> candidates) {
 +    public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
 +        final CraftServer server = this.server.server;
-+        final String buffer = line.line();
++        final String buffer = "/" + line.line();
 +        // Paper end
          Waitable<List<String>> waitable = new Waitable<List<String>>() {
              @Override
