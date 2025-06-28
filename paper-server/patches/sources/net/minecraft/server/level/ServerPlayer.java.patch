@@ -1368,6 +1368,15 @@
          this.gameMode
              .setGameModeForPlayer(this.calculateGameModeForNewPlayer(readPlayerMode(input, "playerGameType")), readPlayerMode(input, "previousPlayerGameType"));
      }
+@@ -2008,7 +_,7 @@
+     @Override
+     public void indicateDamage(double xDistance, double zDistance) {
+         this.hurtDir = (float)(Mth.atan2(zDistance, xDistance) * 180.0F / (float)Math.PI - this.getYRot());
+-        this.connection.send(new ClientboundHurtAnimationPacket(this));
++        this.connection.send(new ClientboundHurtAnimationPacket(0, -180)); // TL - Play old damage animation
+     }
+ 
+     @Override
 @@ -2029,8 +_,14 @@
  
      @Override
