@@ -281,16 +281,18 @@
                              flag1 = true;
                          } else {
                              flag1 = false;
-@@ -1130,7 +_,9 @@
+@@ -1130,8 +_,10 @@
                              && !this.isPassenger()
                              && target instanceof LivingEntity
                              && !this.isSprinting();
 +                        flag2 = flag2 && !this.level().paperConfig().entities.behavior.disablePlayerCrits; // Paper - Toggleable player crits
                          if (flag2) {
+-                            f *= 1.5F;
 +                            damageSource = damageSource.critical(); // Paper - critical damage API
-                             f *= 1.5F;
++                            f *= 1.15F; // TL - Change critical hits to +15% damage
                          }
  
+                         float f2 = f + f1;
 @@ -1157,17 +_,23 @@
                                  if (target instanceof LivingEntity livingEntity1) {
                                      livingEntity1.knockback(
