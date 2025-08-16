@@ -1,0 +1,20 @@
+--- a/net/minecraft/world/effect/MobEffects.java
++++ b/net/minecraft/world/effect/MobEffects.java
+@@ -47,7 +_,7 @@
+         "strength",
+         new MobEffect(MobEffectCategory.BENEFICIAL, 16762624)
+             .addAttributeModifier(
+-                Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.strength"), 3.0, AttributeModifier.Operation.ADD_VALUE
++                Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.strength"), 0.2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL // TL - Change strength to +20% damage
+             )
+     );
+     public static final Holder<MobEffect> INSTANT_HEALTH = register("instant_health", new HealOrHarmMobEffect(MobEffectCategory.BENEFICIAL, 16262179, false));
+@@ -81,7 +_,7 @@
+         "weakness",
+         new MobEffect(MobEffectCategory.HARMFUL, 4738376)
+             .addAttributeModifier(
+-                Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.weakness"), -4.0, AttributeModifier.Operation.ADD_VALUE
++                Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.weakness"), -0.25, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL // TL - Change weakness to -25% damage
+             )
+     );
+     public static final Holder<MobEffect> POISON = register("poison", new PoisonMobEffect(MobEffectCategory.HARMFUL, 8889187));
