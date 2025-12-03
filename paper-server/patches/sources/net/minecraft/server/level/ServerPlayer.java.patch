@@ -1537,6 +1537,15 @@
      }
  
      @Override
+@@ -2089,7 +_,7 @@
+     @Override
+     public void indicateDamage(double xDistance, double zDistance) {
+         this.hurtDir = (float)(Mth.atan2(zDistance, xDistance) * 180.0F / (float)Math.PI - this.getYRot());
+-        this.connection.send(new ClientboundHurtAnimationPacket(this));
++		this.connection.send(new ClientboundHurtAnimationPacket(0, -180)); // TL - Play old damage animation
+     }
+ 
+     @Override
 @@ -2109,9 +_,9 @@
      }
  
